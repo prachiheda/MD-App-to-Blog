@@ -4,43 +4,65 @@ struct ContentView: View {
     @State private var markdownText = ""
     @State private var fileName = "new-post"
     @State private var statusMessage = ""
+    
+    @State private var showingConfirmationAlert = false
+    @State private var showingPreview = false
 
     var body: some View {
-        VStack {
-            // File Name Input
-            TextField("File Name (without .md)", text: $fileName)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
+        NavigationView {
+            VStack(spacing: 0) {
+                // Filename field
+                TextField("File Name (without .md)", text: $fileName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding()
 
-            // Markdown Input
-            TextEditor(text: $markdownText)
-                .border(Color.gray, width: 1)
-                .frame(height: 300)
-                .padding()
-
-            // Push Button
-            Button("Push to GitHub") {
-                Task {
-                    await pushToGitHub(content: markdownText, fileName: fileName)
+                // Toggle between a raw TextEditor and WebView-based Markdown preview
+                if !showingPreview {
+                    TextEditor(text: $markdownText)
+                        .padding()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    // Our new WebView with Showdown
+                    MarkdownWebView(markdownText: markdownText)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            .padding()
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(10)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    // Toggle preview mode
+                    Button {
+                        showingPreview.toggle()
+                    } label: {
+                        Image(systemName: showingPreview ? "eye.slash" : "eye")
+                    }
 
-            // Status Message
-            Text(statusMessage)
-                .foregroundColor(.gray)
-                .padding()
-        }
-        .padding()
-        .onAppear {
-            markdownText = generateMarkdownTemplate()
+                    // Push to GitHub
+                    Button("Push to GitHub") {
+                        showingConfirmationAlert = true
+                    }
+                }
+            }
+            .alert("Are you sure you want to push to GitHub?",
+                   isPresented: $showingConfirmationAlert
+            ) {
+                Button("Yes") {
+                    Task {
+                        await pushToGitHub(content: markdownText, fileName: fileName)
+                    }
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("This will publish \(fileName).md to the main branch.")
+            }
+            .onAppear {
+                markdownText = generateMarkdownTemplate()
+            }
         }
     }
-
-    // Generate markdown template with today's date
+    
+    // Provide a default markdown template
     func generateMarkdownTemplate() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
@@ -55,41 +77,52 @@ struct ContentView: View {
         description: YOUR DESCRIPTION HERE
         summary: YOUR SUMMARY HERE
         ---
+
+        # Heading Example
+
+        Some **bold** text, some *italic* text.
+        - List item 1
+        - List item 2
         """
     }
-    
+
+    // Keychain retrieval
     func getGitHubToken() -> String? {
         let keychainQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: "GitHubToken",
             kSecAttrAccount as String: "prachiheda",
             kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
+            kSecMatchLimit as String: kSecMatchLimitOne,
+            kSecAttrSynchronizable as String: kCFBooleanTrue!,
+            kSecUseDataProtectionKeychain as String: true
         ]
         
         var dataTypeRef: AnyObject? = nil
         let status = SecItemCopyMatching(keychainQuery as CFDictionary, &dataTypeRef)
         
-        if status == errSecSuccess {
-            if let data = dataTypeRef as? Data {
-                return String(data: data, encoding: .utf8)
-            }
+        if status == errSecSuccess, let data = dataTypeRef as? Data {
+            return String(data: data, encoding: .utf8)
         } else {
             print("Failed to retrieve token from Keychain: \(status)")
+            return nil
         }
-        
-        return nil
     }
-
+    
+    // GitHub push (unchanged)
     func pushToGitHub(content: String, fileName: String) async {
         guard let token = getGitHubToken() else {
-                statusMessage = "❌ No token found in Keychain."
-                return
-            }
+            statusMessage = "❌ No token found in Keychain."
+            return
+        }
+        
         let repo = "prachiheda/prachiblogs"
         let path = "content/posts/\(fileName).md"
         
-        let url = URL(string: "https://api.github.com/repos/\(repo)/contents/\(path)?branch=main")!
+        guard let url = URL(string: "https://api.github.com/repos/\(repo)/contents/\(path)?branch=main") else {
+            statusMessage = "❌ Invalid URL"
+            return
+        }
         
         let contentBase64 = content.data(using: .utf8)!.base64EncodedString()
         let payload: [String: Any] = [

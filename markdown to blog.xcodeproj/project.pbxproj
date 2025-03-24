@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AE043B1B2D91E19D00247E2C /* webview.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE043B1A2D91E19D00247E2C /* webview.swift */; };
 		AE7143132D8FD7C70011611C /* markdown_to_blogApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE7143122D8FD7C70011611C /* markdown_to_blogApp.swift */; };
 		AE7143152D8FD7C70011611C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE7143142D8FD7C70011611C /* ContentView.swift */; };
 		AE7143172D8FD7C90011611C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AE7143162D8FD7C90011611C /* Assets.xcassets */; };
@@ -16,6 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AE043B1A2D91E19D00247E2C /* webview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = webview.swift; sourceTree = "<group>"; };
 		AE71430F2D8FD7C70011611C /* markdown to blog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "markdown to blog.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE7143122D8FD7C70011611C /* markdown_to_blogApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = markdown_to_blogApp.swift; sourceTree = "<group>"; };
 		AE7143142D8FD7C70011611C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -61,6 +63,7 @@
 				AE7143142D8FD7C70011611C /* ContentView.swift */,
 				AE7143162D8FD7C90011611C /* Assets.xcassets */,
 				AE7143182D8FD7C90011611C /* Preview Content */,
+				AE043B1A2D91E19D00247E2C /* webview.swift */,
 			);
 			path = "markdown to blog";
 			sourceTree = "<group>";
@@ -146,6 +149,7 @@
 				AEE9C5F92D8FDDE0001956F5 /* EditPostView.swift in Sources */,
 				AE7143152D8FD7C70011611C /* ContentView.swift in Sources */,
 				AEE9C5F72D8FDDBB001956F5 /* PostListView.swift in Sources */,
+				AE043B1B2D91E19D00247E2C /* webview.swift in Sources */,
 				AE7143132D8FD7C70011611C /* markdown_to_blogApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

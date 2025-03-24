@@ -27,7 +27,9 @@ struct PostListView: View {
     }
 
     func fetchPosts() async {
-        let token = "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"
+        guard let token = getGitHubToken() else {
+            return
+        }
         let repo = "prachiheda/prachiblogs"
         let path = "content/posts"
         
@@ -44,6 +46,28 @@ struct PostListView: View {
         } catch {
             errorMessage = "Failed to load posts: \(error.localizedDescription)"
             isLoading = false
+        }
+    }
+    
+    func getGitHubToken() -> String? {
+        let keychainQuery: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: "GitHubToken",
+            kSecAttrAccount as String: "prachiheda",
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+            kSecAttrSynchronizable as String: kCFBooleanTrue!,
+            kSecUseDataProtectionKeychain as String: true
+        ]
+        
+        var dataTypeRef: AnyObject? = nil
+        let status = SecItemCopyMatching(keychainQuery as CFDictionary, &dataTypeRef)
+        
+        if status == errSecSuccess, let data = dataTypeRef as? Data {
+            return String(data: data, encoding: .utf8)
+        } else {
+            print("Failed to retrieve token from Keychain: \(status)")
+            return nil
         }
     }
 }
